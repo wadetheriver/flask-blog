@@ -55,7 +55,8 @@ def about():
 def get_article(article_id):
     fetched_article = Article.query.get(article_id)
     ds_article = article_schema.dump(fetched_article)
-    return ds_article
+    return render_template('article.html', article=ds_article)
+    # return ds_articles
 
 @app.route('/articles', methods=['GET'])
 def get_articles():
