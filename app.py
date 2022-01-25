@@ -19,7 +19,7 @@ class Article(db.Model):
     title = db.Column(db.String(100))
     body = db.Column(db.String(100))
     author = db.Column(db.String(100))
-    create_date = db.Column(db.DateTime)
+    create_date = db.Column(db.String(100))
 
 
 # class Author(db.Model):
@@ -63,7 +63,6 @@ def get_articles():
     ds_articles = articles_schema.dump(fetched_articles)
     print(ds_articles)
     return render_template('articles.html', articles=ds_articles)
-    # return ds_articles
 
 
 if __name__ == '__main__':
