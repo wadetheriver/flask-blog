@@ -45,6 +45,7 @@ articles_schema = ArticleSchema(many=True)
 def hello_world():  # put application's code here
     return render_template('home.html')
 
+
 @app.route('/about', methods = ['GET'])
 def about():
     return render_template('about.html')
@@ -56,8 +57,13 @@ def get_article(article_id):
     ds_article = article_schema.dump(fetched_article)
     return ds_article
 
-
-
+@app.route('/articles', methods=['GET'])
+def get_articles():
+    fetched_articles = Article.query.all()
+    ds_articles = articles_schema.dump(fetched_articles)
+    print(ds_articles)
+    return render_template('articles.html', articles=ds_articles)
+    # return ds_articles
 
 
 if __name__ == '__main__':
