@@ -9,6 +9,7 @@ from sqlalchemy import func
 
 app = Flask(__name__)
 # basedir = os.path.abspath(os.path.dirname(__file__))
+app.secret_key = 'replacethisinproction'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:root@localhost/f_blog"
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'f_blog.sqlite')
@@ -99,7 +100,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        # flash('Welcome to the community!', 'success')
+        flash('Welcome to the community!', 'success')
 
         return redirect(url_for('index'))
     return render_template('register.html', form=form)
