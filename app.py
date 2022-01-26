@@ -2,10 +2,8 @@ from flask import Flask, render_template, request, flash, redirect, url_for, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 import psycopg2
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators, BooleanField, EmailField
 from forms import RegistrationForm
 from passlib.hash import sha256_crypt
-
 # import os
 from sqlalchemy import func
 
@@ -36,7 +34,7 @@ class User(db.Model):
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     email = db.Column(db.String(100))
-    user_name = db.Column(db.String(100))
+    username = db.Column(db.String(100))
     password = db.Column(db.String(100))
     register_date = db.Column(db.DateTime(timezone=True),
                               default=func.now())
@@ -62,7 +60,7 @@ articles_schema = ArticleSchema(many=True)
 
 
 @app.route('/')
-def hello_world():  # put application's code here
+def index():  # put application's code here
     return render_template('home.html')
 
 
@@ -91,7 +89,19 @@ def get_articles():
 def register():
     form = RegistrationForm(request.form)
     if request.method == 'POST' and form.validate():
-        return render_template('register.html', form=form)
+        new_user = User(
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            username=form.username.data,
+            email=form.email.data,
+            password=sha256_crypt.encrypt(str(form.password.data))
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        # flash('Welcome to the community!', 'success')
+
+        return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
 
