@@ -102,8 +102,15 @@ def register():
 
         flash('Welcome to the community!', 'success')
 
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # redirect if logged in
+    # login user
+    return render_template('login.html')
 
 
 if __name__ == '__main__':
