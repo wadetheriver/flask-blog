@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 import psycopg2
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators, BooleanField, EmailField
 from passlib.hash import sha256_crypt
 
 # import os
@@ -84,6 +84,28 @@ def get_articles():
     ds_articles = articles_schema.dump(fetched_articles)
     print(ds_articles)
     return render_template('articles.html', articles=ds_articles)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm(request.form)
+    if request.method == 'POST' and form.validate():
+        return render_template('register.html', form=form)
+    return render_template('register.html', form=form)
+
+
+# Forms WTF Form
+class RegistrationForm(Form):
+    first_name = StringField('First Name', [validators.Length(min=1, max=50)])
+    last_name = StringField('Last Name', [validators.Length(min=1, max=50)])
+    username = StringField('Username', [validators.Length(min=4, max=25)])
+    email = EmailField('Email', [validators.Length(min=6, max=50)])
+    password = PasswordField('Password', [
+        validators.DataRequired(),
+        validators.EqualTo('confirm', message="Passwords do not match!")
+    ])
+    confirm = PasswordField('Confirm Password')
+    # accept_rules = BooleanField('I promise to be nice.', [validators.InputRequired()])
 
 
 if __name__ == '__main__':
