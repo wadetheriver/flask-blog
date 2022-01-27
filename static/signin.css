@@ -32,6 +32,11 @@ body {
   border-bottom-left-radius: 0;
 }
 
+.alert-success {
+  background-color: transparent;
+  border-color: transparent;
+}
+
 .form-signin input[type="password"] {
   margin-bottom: 10px;
   border-top-left-radius: 0;

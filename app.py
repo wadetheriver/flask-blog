@@ -34,8 +34,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
-    email = db.Column(db.String(100))
-    username = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
+    username = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     register_date = db.Column(db.DateTime(timezone=True),
                               default=func.now())
@@ -58,6 +58,15 @@ class ArticleSchema(ma.SQLAlchemyAutoSchema):
 
 article_schema = ArticleSchema()
 articles_schema = ArticleSchema(many=True)
+
+
+class UserSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = User
+
+
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
 
 
 @app.route('/')
@@ -108,8 +117,13 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # redirect if logged in
-    # login user
+    if request.method == 'POST':
+        user_email = request.form['email']
+        password_candidate = request.form['password']
+        users = User.query.filter_by(email=user_email)
+        print(users_schema.jsonify(users))
+        return users_schema.jsonify(users)
+
     return render_template('login.html')
 
 
