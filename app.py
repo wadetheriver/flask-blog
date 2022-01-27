@@ -5,7 +5,7 @@ import psycopg2
 from forms import RegistrationForm
 from passlib.hash import sha256_crypt
 # import os
-from sqlalchemy import func
+from sqlalchemy import func, exc
 
 app = Flask(__name__)
 # basedir = os.path.abspath(os.path.dirname(__file__))
@@ -103,25 +103,30 @@ def register():
             first_name=form.first_name.data,
             last_name=form.last_name.data,
             username=form.username.data,
-            email=form.email.data,
+            email=str(form.email.data).lower(),
             password=sha256_crypt.encrypt(str(form.password.data))
         )
         db.session.add(new_user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError as e:
+            print(type(e))
+            flash('An error has occurred.', 'warning')
+            return render_template('register.html', form=form)
 
-        flash('Welcome to the community!', 'success')
-
+        flash(f'Welcome to the community {form.first_name.data}!', 'success')
         return redirect(url_for('login'))
+
     return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user_email = request.form['email']
+        user_email = str(request.form['email']).lower()
         password_candidate = request.form['password']
         users = User.query.filter_by(email=user_email)
-        print(users_schema.jsonify(users))
+
         return users_schema.jsonify(users)
 
     return render_template('login.html')
