@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, session, logging
+from flask import Flask, render_template, request, flash, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 import psycopg2
@@ -132,6 +132,9 @@ def login():
             password = user.password
             if sha256_crypt.verify(password_candidate, password):
                 app.logger.info('PASSWORDS MATCHED')
+                session['logged_in'] = True
+                session['username'] = user.username
+                # print(session['username'])
 
             else:
                 app.logger.info('PASSWORDS DO NOT MATCH')
