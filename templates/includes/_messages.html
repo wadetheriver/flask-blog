@@ -1,4 +1,4 @@
-
+{#Flash messages for a redirect#}
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}
@@ -7,6 +7,7 @@
   {% endif %}
 {% endwith %}
 
+{#Messages for rendering a template#}
 {% if error %}
   <div class="alert alert-danger">{{error}}</div>
 {% endif %}

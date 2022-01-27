@@ -32,7 +32,7 @@ body {
   border-bottom-left-radius: 0;
 }
 
-.alert-success {
+.alert-success, .alert-danger {
   background-color: transparent;
   border-color: transparent;
 }

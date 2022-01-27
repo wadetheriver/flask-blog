@@ -125,9 +125,23 @@ def login():
     if request.method == 'POST':
         user_email = str(request.form['email']).lower()
         password_candidate = request.form['password']
-        users = User.query.filter_by(email=user_email)
 
-        return users_schema.jsonify(users)
+        # Flask sqlAchemy query
+        user = User.query.filter_by(email=user_email).first()
+        if user is not None:
+            password = user.password
+            if sha256_crypt.verify(password_candidate, password):
+                app.logger.info('PASSWORDS MATCHED')
+
+            else:
+                app.logger.info('PASSWORDS DO NOT MATCH')
+                error = "Invalid Password!"
+                return render_template('login.html', error=error)
+
+        else:
+            app.logger.info('NO USER')
+            error = "User Not Found!"
+            return render_template('login.html', error=error)
 
     return render_template('login.html')
 
