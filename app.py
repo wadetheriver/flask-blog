@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask import Flask, render_template, request,\
+    flash, redirect, url_for, session, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 import psycopg2
@@ -131,23 +132,28 @@ def login():
         if user is not None:
             password = user.password
             if sha256_crypt.verify(password_candidate, password):
-                app.logger.info('PASSWORDS MATCHED')
                 session['logged_in'] = True
                 session['username'] = user.username
-                # print(session['username'])
-
+                flash('You are now logged in!', 'success')
+                return redirect(url_for('dashboard'))
             else:
                 app.logger.info('PASSWORDS DO NOT MATCH')
                 error = "Invalid Password!"
                 return render_template('login.html', error=error)
-
         else:
-            app.logger.info('NO USER')
             error = "User Not Found!"
             return render_template('login.html', error=error)
 
     return render_template('login.html')
 
+
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    return render_template_string(
+        """
+        Dashboard
+        """
+    )
 
 if __name__ == '__main__':
     app.run()
