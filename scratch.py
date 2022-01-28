@@ -4,6 +4,8 @@
 # def get_article(article_id):
 #     fetched_article = Article.query.get(article_id)
 #     lazy_user = user_schema.dump(fetched_article.user)
+#     lazy_user['password'] = 'Nothing to see here'
 #     ds_article = article_schema.dump(fetched_article)
 #     ds_article['author'] = lazy_user
+#
 #     return ds_article

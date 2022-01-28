@@ -13,7 +13,7 @@ app = Flask(__name__)
 # basedir = os.path.abspath(os.path.dirname(__file__))
 app.secret_key = 'replacethisinproction'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:rootuser@localhost/f_blog"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:root@localhost/f_blog"
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'f_blog.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
@@ -26,9 +26,11 @@ ma = Marshmallow(app)
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
+    subtitle = db.Column(db.String(255))
+    excerpt = db.Column(db.String(255))
     body = db.Column(db.String())
     created_date = db.Column(db.DateTime(timezone=True),
-                            default=func.now())
+                             default=func.now())
     updated_date = db.Column(db.DateTime(timezone=True),
                              default=func.now())
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
@@ -46,13 +48,11 @@ class User(db.Model):
     articles = db.relationship('Article', backref='user', lazy='joined')
 
 
-
-
 class ArticleSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Article
-        include_relationships = True
-        load_instance = True
+        # include_relationships = True
+        # load_instance = True
 
 
 article_schema = ArticleSchema()
@@ -84,6 +84,7 @@ def about():
 def get_article(article_id):
     fetched_article = Article.query.get(article_id)
     lazy_user = user_schema.dump(fetched_article.user)
+    lazy_user['password'] = 'Nothing to see here'
     ds_article = article_schema.dump(fetched_article)
     ds_article['author'] = lazy_user
 
@@ -94,7 +95,7 @@ def get_article(article_id):
 def get_articles():
     fetched_articles = Article.query.all()
     ds_articles = articles_schema.dump(fetched_articles)
-    print(ds_articles)
+    # print(ds_articles)
     return render_template('articles.html', articles=ds_articles)
 
 
