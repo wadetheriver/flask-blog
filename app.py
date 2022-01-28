@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request,\
+from flask import Flask, render_template, request, \
     flash, redirect, url_for, session, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -25,11 +25,13 @@ ma = Marshmallow(app)
 # not certain if func()now is gonna work
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
+    title = db.Column(db.String(255))
     body = db.Column(db.String())
-    author = db.Column(db.String(100))
     create_date = db.Column(db.DateTime(timezone=True),
                             default=func.now())
+    updated_date = db.Column(db.DateTime(timezone=True),
+                             default=func.now())
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable=False)
 
 
 class User(db.Model):
@@ -41,6 +43,7 @@ class User(db.Model):
     password = db.Column(db.String(100))
     register_date = db.Column(db.DateTime(timezone=True),
                               default=func.now())
+    articles = db.relationship('Article', backref='user', lazy=True)
 
 
 # class Author(db.Model):
