@@ -7,6 +7,7 @@ from forms import RegistrationForm
 from passlib.hash import sha256_crypt
 # import os
 from sqlalchemy import func, exc
+from util import requires_login
 
 app = Flask(__name__)
 # basedir = os.path.abspath(os.path.dirname(__file__))
@@ -156,6 +157,7 @@ def logout():
 
 
 @app.route('/dashboard', methods=['GET'])
+@requires_login
 def dashboard():
     # Unsure if i need to pass session here
     return render_template('dashboard.html', session=session)
