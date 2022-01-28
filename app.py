@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, \
-    flash, redirect, url_for, session, render_template_string
+    flash, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 import psycopg2
@@ -13,7 +13,7 @@ app = Flask(__name__)
 # basedir = os.path.abspath(os.path.dirname(__file__))
 app.secret_key = 'replacethisinproction'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:root@localhost/f_blog"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:rootuser@localhost/f_blog"
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'f_blog.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
@@ -27,7 +27,7 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
     body = db.Column(db.String())
-    create_date = db.Column(db.DateTime(timezone=True),
+    created_date = db.Column(db.DateTime(timezone=True),
                             default=func.now())
     updated_date = db.Column(db.DateTime(timezone=True),
                              default=func.now())
@@ -43,22 +43,16 @@ class User(db.Model):
     password = db.Column(db.String(100))
     register_date = db.Column(db.DateTime(timezone=True),
                               default=func.now())
-    articles = db.relationship('Article', backref='user', lazy=True)
+    articles = db.relationship('Article', backref='user', lazy='joined')
 
 
-# class Author(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     first_name = db.Column(db.String(100))
-#     last_name = db.Column(db.String(100))
-#     email = db.Column(db.String(100))
-#     password = db.Column(db.String(100))
 
 
 class ArticleSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Article
-        # include_relationships = True
-        # load_instance = True
+        include_relationships = True
+        load_instance = True
 
 
 article_schema = ArticleSchema()
@@ -68,6 +62,8 @@ articles_schema = ArticleSchema(many=True)
 class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User
+        include_relationships = True
+        load_instance = True
 
 
 user_schema = UserSchema()
@@ -87,9 +83,11 @@ def about():
 @app.route('/articles/<article_id>', methods=['GET'])
 def get_article(article_id):
     fetched_article = Article.query.get(article_id)
+    lazy_user = user_schema.dump(fetched_article.user)
     ds_article = article_schema.dump(fetched_article)
-    return render_template('article.html', article=ds_article)
-    # return ds_articles
+    ds_article['author'] = lazy_user
+
+    return ds_article
 
 
 @app.route('/articles', methods=['GET'])
