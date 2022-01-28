@@ -147,13 +147,19 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/logout')
+def logout():
+    # define a db table to track logged in users...
+    session.clear()
+    flash('You have been logged out!', 'success')
+    return redirect(url_for('login'))
+
+
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    return render_template_string(
-        """
-        Dashboard
-        """
-    )
+    # Unsure if i need to pass session here
+    return render_template('dashboard.html', session=session)
+
 
 if __name__ == '__main__':
     app.run()
