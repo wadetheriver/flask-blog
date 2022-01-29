@@ -5,6 +5,7 @@ from flask_marshmallow import Marshmallow
 import psycopg2
 from forms import RegistrationForm, ArticleForm
 from passlib.hash import sha256_crypt
+from bs4 import BeautifulSoup
 # import os
 from sqlalchemy import func, exc
 from util import requires_login
@@ -13,7 +14,7 @@ app = Flask(__name__)
 # basedir = os.path.abspath(os.path.dirname(__file__))
 app.secret_key = 'replacethisinproction'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:root@localhost/f_blog"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:rootuser@localhost/f_blog"
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'f_blog.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
@@ -26,8 +27,6 @@ ma = Marshmallow(app)
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
-    subtitle = db.Column(db.String(255))
-    excerpt = db.Column(db.String(255))
     body = db.Column(db.String())
     created_date = db.Column(db.DateTime(timezone=True),
                              default=func.now())
@@ -51,8 +50,8 @@ class User(db.Model):
 class ArticleSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Article
-        # include_relationships = True
-        # load_instance = True
+        include_relationships = True
+        load_instance = True
 
 
 article_schema = ArticleSchema()
@@ -64,7 +63,6 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         model = User
         include_relationships = True
         load_instance = True
-
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -83,20 +81,23 @@ def about():
 @app.route('/articles/<article_id>', methods=['GET'])
 def get_article(article_id):
     fetched_article = Article.query.get(article_id)
-    lazy_user = user_schema.dump(fetched_article.user)
-    lazy_user['password'] = 'Nothing to see here'
+    joined_user = user_schema.dump(fetched_article.user)
+    joined_user['password'] = 'Nothing to see here'
     ds_article = article_schema.dump(fetched_article)
-    ds_article['author'] = lazy_user
-
+    ds_article['author'] = joined_user
+    print(ds_article['body'])
     return ds_article
 
 
 @app.route('/articles', methods=['GET'])
 def get_articles():
     fetched_articles = Article.query.all()
-    ds_articles = articles_schema.dump(fetched_articles)
-    # print(ds_articles)
-    return render_template('articles.html', articles=ds_articles)
+    # Strip HTML from text body
+    soup = BeautifulSoup(fetched_articles[0].body)
+    fetched_articles[0].body = soup.get_text()
+    # ds_articles = articles_schema.dump(fetched_articles)
+    # return ds_articles
+    return render_template('articles.html', articles=fetched_articles)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -162,8 +163,10 @@ def logout():
 @app.route('/dashboard', methods=['GET'])
 @requires_login
 def dashboard():
-    # Unsure if i need to pass session here
-    return render_template('dashboard.html', session=session)
+    user_articles = Article.query.filter_by(user_id=session['user_id'])
+
+    # ds_articles = articles_schema.dump(user_articles)
+    return render_template('dashboard.html', session=session, articles=user_articles)
 
 
 @app.route('/add_article', methods=['GET', 'POST'])
@@ -173,11 +176,8 @@ def create_article():
     if request.method == 'POST' and form.validate():
         new_article = Article(
             title=form.title.data,
-            subtitle=form.subtitle.data,
-            excerpt=form.excerpt.data,
             body=form.body.data,
             user_id=session['user_id']
-
         )
         db.session.add(new_article)
         try:

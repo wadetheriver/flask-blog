@@ -29,6 +29,4 @@ class RegistrationForm(Form):
 # Article Form Class
 class ArticleForm(Form):
     title = StringField('Title', [validators.Length(min=1, max=200)])
-    subtitle = StringField('Subtitle', [validators.Length(min=1, max=200)])
-    excerpt = StringField('Excerpt', [validators.Length(min=1, max=400)])
     body = TextAreaField('Content', [validators.Length(min=1)])
