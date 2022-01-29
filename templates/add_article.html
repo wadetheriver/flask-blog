@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="container">
+        {% from "includes/_formhelpers.html" import render_field%}
+
+            <form class="d-grid col-md-6 mx-auto" method="POST" action="">
+                <div class="mb-3">
+                    {{ render_field(form.title, class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ render_field(form.subtitle, class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ render_field(form.excerpt, class="form-control") }}
+                </div>
+                <div class="mb-3" id="editor">
+                    {{ render_field(form.body, class="form-control") }}
+                </div>
+                <div class="d-grid d-md-block">
+                    <button type="submit" class="btn btn-primary" value="Submit">Submit</button>
+                </div>
+
+            </form>
+
+    </div>
+{% endblock %}

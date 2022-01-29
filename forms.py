@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators, BooleanField, EmailField
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators, IntegerField ,BooleanField, EmailField
 
 
 class RegistrationForm(Form):
@@ -24,3 +24,11 @@ class RegistrationForm(Form):
     ])
     confirm = PasswordField('Confirm Password')
     # accept_rules = BooleanField('I promise to be nice.', [validators.InputRequired()])
+
+
+# Article Form Class
+class ArticleForm(Form):
+    title = StringField('Title', [validators.Length(min=1, max=200)])
+    subtitle = StringField('Subtitle', [validators.Length(min=1, max=200)])
+    excerpt = StringField('Excerpt', [validators.Length(min=1, max=400)])
+    body = TextAreaField('Content', [validators.Length(min=1)])

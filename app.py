@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, \
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 import psycopg2
-from forms import RegistrationForm
+from forms import RegistrationForm, ArticleForm
 from passlib.hash import sha256_crypt
 # import os
 from sqlalchemy import func, exc
@@ -137,6 +137,7 @@ def login():
             if sha256_crypt.verify(password_candidate, password):
                 session['logged_in'] = True
                 session['username'] = user.username
+                session['user_id'] = user.id
                 flash('You are now logged in!', 'success')
                 return redirect(url_for('dashboard'))
             else:
@@ -163,6 +164,33 @@ def logout():
 def dashboard():
     # Unsure if i need to pass session here
     return render_template('dashboard.html', session=session)
+
+
+@app.route('/add_article', methods=['GET', 'POST'])
+@requires_login
+def create_article():
+    form = ArticleForm(request.form)
+    if request.method == 'POST' and form.validate():
+        new_article = Article(
+            title=form.title.data,
+            subtitle=form.subtitle.data,
+            excerpt=form.excerpt.data,
+            body=form.body.data,
+            user_id=session['user_id']
+
+        )
+        db.session.add(new_article)
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError as e:
+            print(type(e))
+            flash('An error has occurred.', 'warning')
+            return render_template('add_article.html', form=form)
+
+        flash(f'Your article has been created!', 'success')
+        return redirect(url_for('get_articles'))
+
+    return render_template('add_article.html', form=form)
 
 
 if __name__ == '__main__':
